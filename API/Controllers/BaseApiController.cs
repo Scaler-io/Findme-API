@@ -1,6 +1,7 @@
 using API.Models.Constants;
 using API.Models.Core;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 
 namespace API.Controllers
 {
