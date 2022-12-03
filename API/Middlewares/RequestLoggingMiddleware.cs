@@ -1,5 +1,5 @@
 using API.Extensions;
-using Serilog;
+using ILogger = Serilog.ILogger;
 
 namespace API.Middlewares
 {

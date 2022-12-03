@@ -3,7 +3,7 @@ using System.Net.Mime;
 using System.Text.Json;
 using API.Extensions;
 using API.Models.Core;
-using Serilog;
+using ILogger = Serilog.ILogger;
 
 namespace API.Middlewares
 {

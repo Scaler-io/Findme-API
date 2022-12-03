@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 using API.Models.Constants;
-using Serilog;
+using ILogger = Serilog.ILogger;
 
 namespace API.Extensions
 {

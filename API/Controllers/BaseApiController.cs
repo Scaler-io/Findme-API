@@ -1,7 +1,7 @@
 using API.Models.Constants;
 using API.Models.Core;
 using Microsoft.AspNetCore.Mvc;
-using Serilog;
+using ILogger = Serilog.ILogger;
 
 namespace API.Controllers
 {
