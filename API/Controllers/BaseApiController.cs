@@ -26,13 +26,13 @@ namespace API.Controllers
             switch (result.ErrorCode)
             {
                 case ErrorCodes.NotFound:
-                    return NotFound(new ApiResponse(ErrorCodes.NotFound, result.ErrorMessage));
+                    return NotFound(new ApiResponse(ErrorCodes.NotFound, result.ErrorMessage ?? ErrorMessages.NotFound));
                 case ErrorCodes.Unauthorized:
-                    return Unauthorized(new ApiResponse(ErrorCodes.Unauthorized, result.ErrorMessage));
+                    return Unauthorized(new ApiResponse(ErrorCodes.Unauthorized, result.ErrorMessage ?? ErrorMessages.Unauthorized));
                 case ErrorCodes.Operationfailed:
-                    return BadRequest(new ApiResponse(ErrorCodes.Operationfailed, ErrorMessages.Operationfailed));
+                    return BadRequest(new ApiResponse(ErrorCodes.Operationfailed, ErrorMessages.Operationfailed ?? ErrorMessages.Operationfailed));
                 default:
-                    return BadRequest(new ApiResponse(ErrorCodes.BadRequest, result.ErrorMessage));
+                    return BadRequest(new ApiResponse(ErrorCodes.BadRequest, result.ErrorMessage ?? ErrorMessages.BadRequest));
             }
         }
 
@@ -66,6 +66,11 @@ namespace API.Controllers
                 validationError.Errors.Add(fieldLevelError);
             }
             return new UnprocessableEntityObjectResult(validationError);
+        }
+
+        public static bool IsInvalidResult(ValidationResult validationResult)
+        {
+            return validationResult != null && !validationResult.IsValid;
         }
     }
 }

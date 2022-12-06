@@ -7,6 +7,6 @@ namespace API.Services.Interfaces.v2
     public interface IIdentityService
     {
         Task<Result<AuthSuccessResponse>> Register(UserRegistrationRequest request);
-        //Task<Result<AuthSuccessResponse>> Login(UserLoginRequest request);
+        Task<Result<AuthSuccessResponse>> Login(UserLoginRequest request);
     }
 }

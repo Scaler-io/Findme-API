@@ -1,5 +1,6 @@
 ﻿using API.Services.Interfaces.v2;
 using API.Services.v2.Account;
+using API.Services.v2.Identity;
 using API.Services.v2.Users;
 using FluentValidation;
 using System.Reflection;
@@ -12,6 +13,7 @@ namespace API.DependencyInjections
         {
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IIdentityService, IdentityService>();
+            services.AddScoped<ITokenService, TokenService>();
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
