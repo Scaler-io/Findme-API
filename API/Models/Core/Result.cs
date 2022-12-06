@@ -11,7 +11,7 @@ namespace API.Models.Core
             return new Result<T>{ IsSuccess = true, Value = value};
         }
 
-        public static Result<T> Fail(string errorCode, string errorMessage){
+        public static Result<T> Fail(string errorCode, string errorMessage=""){
             return new Result<T> { IsSuccess = false, ErrorCode = errorCode, ErrorMessage = errorMessage};
         }
     }

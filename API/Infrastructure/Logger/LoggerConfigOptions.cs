@@ -1,4 +1,4 @@
-namespace API.Infrastructure
+namespace API.Infrastructure.Logger
 {
     public class LoggerConfigOptions
     {

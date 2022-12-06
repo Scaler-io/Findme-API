@@ -1,4 +1,5 @@
 using API.Extensions;
+using System.Net;
 using ILogger = Serilog.ILogger;
 
 namespace API.Middlewares
@@ -18,12 +19,18 @@ namespace API.Middlewares
             try{
                 await _next(context);
             }finally{
-                _logger.Here().Debug(
-                    "Request {@method} {@url} => {@statusCode}",
-                    context.Request.Method,
-                    context.Request.Path,
-                    context.Response.StatusCode
-                );
+                switch (context.Response.StatusCode)
+                {
+                    case (int)HttpStatusCode.OK:
+                        _logger.Here().Debug("Request {@method} {@url} => {@statusCode}",context.Request.Method,context.Request.Path,context.Response.StatusCode);
+                        break;
+                    case (int)HttpStatusCode.InternalServerError:
+                        _logger.Here().Error("Request {@method} {@url} => {@statusCode}", context.Request.Method, context.Request.Path, context.Response.StatusCode);
+                        break;
+                    default:
+                        _logger.Here().Warning("Request {@method} {@url} => {@statusCode}", context.Request.Method, context.Request.Path, context.Response.StatusCode);
+                        break;
+                }
             }
         }
     }

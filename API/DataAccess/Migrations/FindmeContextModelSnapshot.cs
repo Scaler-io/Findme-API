@@ -19,8 +19,23 @@ namespace API.DataAccess.Migrations
 
             modelBuilder.Entity("API.Entities.AppUser", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("LastLogin")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("PasswordHash")
+                        .HasColumnType("BLOB");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .HasColumnType("BLOB");
+
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("UserName")
@@ -28,6 +43,9 @@ namespace API.DataAccess.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

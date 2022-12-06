@@ -1,11 +1,14 @@
 using API.Models.Constants;
 using API.Models.Core;
+using FluentValidation.AspNetCore;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using ILogger = Serilog.ILogger;
 
 namespace API.Controllers
 {
-    [Route("api/v{version:apiVersion]/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class BaseApiController: ControllerBase
     {
@@ -42,6 +45,27 @@ namespace API.Controllers
                 );
 
             return OkOrFail(result);
+        }
+
+        public UnprocessableEntityObjectResult ProcessValidationResult(ValidationResult validationResult)
+        {
+            validationResult.AddToModelState(ModelState);
+            var errors = ModelState.Where(err => err.Value.Errors.Count > 0).ToList();
+            var validationError = new ApiValidationResponse()
+            {
+                Errors = new List<FieldLevelError>()
+            };
+            foreach (var error in errors)
+            {
+                var fieldLevelError = new FieldLevelError
+                {
+                    Code = "Invalid",
+                    Field = error.Key,
+                    Message = error.Value.Errors?.First().ErrorMessage
+                };
+                validationError.Errors.Add(fieldLevelError);
+            }
+            return new UnprocessableEntityObjectResult(validationError);
         }
     }
 }
