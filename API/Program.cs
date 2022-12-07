@@ -14,7 +14,8 @@ host.UseSerilog();
 // services
 services.AddApplicationServices(configuration)
         .AddDatalayerServices(configuration)
-        .AddBusinessLayerServices();
+        .AddBusinessLayerServices()
+        .AddIdentityServices(configuration);
 
 var app = builder.Build();
 var versionDescriptionProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();

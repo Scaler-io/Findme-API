@@ -1,10 +1,12 @@
 ﻿using API.Extensions;
 using API.Services.Interfaces.v2;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ILogger = Serilog.ILogger;
 
 namespace API.Controllers.v2.Users
 {
+    [Authorize]
     [ApiVersion("2")]
     public class UserController : BaseApiController
     {
@@ -15,6 +17,7 @@ namespace API.Controllers.v2.Users
             _userService = userService;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {

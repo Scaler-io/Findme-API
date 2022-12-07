@@ -18,21 +18,16 @@ namespace API.DependencyInjections
             services.AddControllers();
             services.AddEndpointsApiExplorer()
                     .AddSwaggerGen();
-
-
             // serilog 
             var logger = LoggerConfig.Configure(configuration);
             services.AddSingleton(Log.Logger)   
                     .AddSingleton(x => logger);
-
             // http context accessor
             services.AddHttpContextAccessor();
-
             // api validation behaviours
             services.Configure<ApiBehaviorOptions>(options => {
                 options.InvalidModelStateResponseFactory = HandleFrameorkValidationFailure();
             });
-
             // api versioning
             services.AddApiVersioning(options => {
                 options.DefaultApiVersion = new ApiVersion(1,0);
@@ -42,9 +37,8 @@ namespace API.DependencyInjections
                 options.GroupNameFormat = "'v'VVV";
                 options.SubstituteApiVersionInUrl = true;
             });
-
+            // swagger
             services.ConfigureOptions<ConfigureSwaggerOptions>();
-
             // Cors
             services.AddCors(options =>
             {
@@ -53,7 +47,6 @@ namespace API.DependencyInjections
                     policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
-
             return services;
         }        
 
@@ -77,6 +70,8 @@ namespace API.DependencyInjections
             app.UseMiddleware<RequestExceptionMiddleware>();
 
             app.UseCors("DefaultCorsPolicy");
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
