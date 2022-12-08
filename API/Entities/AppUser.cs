@@ -1,6 +1,3 @@
-using Destructurama.Attributed;
-using Newtonsoft.Json;
-
 namespace API.Entities
 {
     public class AppUser
@@ -9,13 +6,9 @@ namespace API.Entities
         public string UserName { get; set; }      
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }
+        public UserProfile Profile { get; set; } = new UserProfile();
         public DateTime? CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public DateTime? LastLogin { get; set; }
-
-        public string ToString()
-        {
-            return JsonConvert.SerializeObject(this);
-        }
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace API.DataAccess.Configurations
+namespace API.DataAccess.Configurations.User
 {
     public class AppUserEntityConfiguration : IEntityTypeConfiguration<AppUser>
     {
@@ -12,6 +12,10 @@ namespace API.DataAccess.Configurations
                 .IsRequired();
 
             builder.HasIndex(u => u.UserName).IsUnique();
+
+            builder.HasOne(u => u.Profile)
+                .WithOne(p => p.User)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
