@@ -1,4 +1,5 @@
 ﻿using API.DataAccess.Interfaces;
+using API.DataAccess.Specifications.User;
 using API.Entities;
 using API.Extensions;
 using API.Models.Constants;
@@ -26,7 +27,8 @@ namespace API.Services.v2.Users
         public async Task<Result<UserResponse>> GetUserById(int id)
         {
             _logger.Here().MethoEnterd();
-            var user = await _userRepository.GetByIdAsync(id);
+            var spec = new FindUserWithProfileInfoSpec(id);
+            var user = await _userRepository.GetEntityWithSpec(spec); 
             if(user == null)
             {
                 _logger.Here().Error($"No user was found with id {id}");

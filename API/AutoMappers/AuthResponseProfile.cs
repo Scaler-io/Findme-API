@@ -10,7 +10,7 @@ namespace API.AutoMappers
         public AuthResponseProfile()
         {
             CreateMap<AppUser, AuthSuccessResponse>()
-                .ForMember(d => d.Metadata, o => o.MapFrom<UserMetadatResolver>());
+                .ForMember(d => d.User, o => o.MapFrom<UserResponseResolver>());
         }
     }
 }

@@ -47,7 +47,7 @@ namespace API.Controllers
             return OkOrFail(result);
         }
 
-        public UnprocessableEntityObjectResult ProcessValidationResult(ValidationResult validationResult)
+        protected IActionResult ProcessValidationResult(ValidationResult validationResult)
         {
             validationResult.AddToModelState(ModelState);
             var errors = ModelState.Where(err => err.Value.Errors.Count > 0).ToList();

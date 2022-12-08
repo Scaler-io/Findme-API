@@ -1,4 +1,5 @@
 ﻿using API.Entities;
+using API.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -19,6 +20,12 @@ namespace API.DataAccess.Configurations.User
             builder.HasOne(p => p.Address)
                 .WithOne(a => a.Profile)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(p => p.Gender)
+                .HasConversion(
+                    o => o.ToString(), 
+                    o => (Gender)Enum.Parse(typeof(Gender), o)
+                );
         }
     }
 }

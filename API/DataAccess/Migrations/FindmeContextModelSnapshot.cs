@@ -158,8 +158,9 @@ namespace API.DataAccess.Migrations
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Gender")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Interests")
                         .HasColumnType("TEXT");

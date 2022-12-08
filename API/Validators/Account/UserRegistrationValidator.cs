@@ -22,6 +22,14 @@ namespace API.Validators.Account
                 .Cascade(CascadeMode.Stop)
                 .Equal(acc => acc.Password).WithMessage("Password did not match");
 
+            RuleFor(acc => acc.Profile)
+                .Cascade(CascadeMode.Stop)
+                .SetValidator(new UserRegistrationProfileValidator());
+
+            RuleFor(acc => acc.Address)
+                .Cascade(CascadeMode.Stop)
+                .SetValidator(new UserRegistrationAddressValidator());
+
         }
     }
 }

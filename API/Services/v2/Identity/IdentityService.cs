@@ -4,6 +4,7 @@ using API.Entities;
 using API.Extensions;
 using API.Models.Constants;
 using API.Models.Core;
+using API.Models.Enums;
 using API.Models.Requests.Account;
 using API.Models.Responses;
 using API.Services.Interfaces.v2;
@@ -102,12 +103,31 @@ namespace API.Services.v2.Account
 
         private AppUser PopulateUser(UserRegistrationRequest request)
         {
+            DateTime.TryParse(request.Profile.DateOfBirth, out var dob);
+            Enum.TryParse<Gender>(request.Profile.Gender, out var gender);
+
             using var hmac = new HMACSHA512();
             return new AppUser
             {
                 UserName = request.Username.ToLower(),
                 PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
                 PasswordSalt = hmac.Key,
+                Profile = new UserProfile
+                {
+                    DateOfBirth = dob,
+                    KnownAs = request.Profile.KnownAs,
+                    Gender = gender,
+                    Address = new UserAddress
+                    {
+                        StreetNumber = request.Address.StreetNumber,
+                        StreetName = request.Address.StreetName,
+                        StreetType = request.Address.StreetType,
+                        City = request.Address.City,
+                        District = request.Address.District,
+                        State = request.Address.State,
+                        PostCode = request.Address.PostCode
+                    }
+                },
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
                 LastLogin = null
