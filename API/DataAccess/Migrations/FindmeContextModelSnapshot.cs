@@ -158,6 +158,10 @@ namespace API.DataAccess.Migrations
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -166,6 +170,10 @@ namespace API.DataAccess.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("KnownAs")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("LookingFor")

@@ -1,5 +1,4 @@
-﻿using API.Models.Core;
-using Destructurama.Attributed;
+﻿using Destructurama.Attributed;
 
 namespace API.Models.Responses
 {

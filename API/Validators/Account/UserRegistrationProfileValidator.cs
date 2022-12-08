@@ -9,8 +9,15 @@ namespace API.Validators.Account
         {
             RuleFor(acc => acc.Gender)
                 .Cascade(CascadeMode.Stop)
-                .NotEmpty().WithMessage("'Gender' is required")
-                ;
+                .NotEmpty().WithMessage("'Gender' is required");
+
+            RuleFor(acc => acc.FirstName)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("First name is required");
+
+            RuleFor(acc => acc.LastName)
+                .Cascade(CascadeMode.Stop)
+                .NotEmpty().WithMessage("Last name is required");
 
             RuleFor(acc => acc.DateOfBirth)
                 .Cascade(CascadeMode.Stop)

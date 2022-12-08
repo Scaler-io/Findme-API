@@ -9,6 +9,11 @@ namespace API.DataAccess.Configurations.User
     {
         public void Configure(EntityTypeBuilder<UserProfile> builder)
         {
+            builder.Property(p => p.FirstName)
+                .IsRequired();
+            builder.Property(p => p.LastName)
+                .IsRequired();
+
             builder.HasOne(p => p.User)
                 .WithOne(u => u.Profile);
 
