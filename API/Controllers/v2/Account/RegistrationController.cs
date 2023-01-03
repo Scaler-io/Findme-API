@@ -14,17 +14,17 @@ namespace API.Controllers.v2.Account
     [ApiVersion("2")]
     public class RegistrationController : BaseApiController
     {
-        private readonly IIdentityService _identityService;
         private readonly IValidator<UserRegistrationRequest> _validator;
 
         public RegistrationController(Serilog.ILogger logger,
-            IIdentityService identityService, IValidator<UserRegistrationRequest> validtor) : base(logger)
+            IIdentityService identityService, IValidator<UserRegistrationRequest> validtor) 
+            : base(logger, identityService)
         {
             _identityService = identityService;
             _validator = validtor;
         }
 
-        [HttpPost]
+        [HttpPost("registration")]
         [ProducesResponseType(typeof(AuthSuccessResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiValidationResponse), (int)HttpStatusCode.UnprocessableEntity)]
         [ProducesResponseType(typeof(ApiExceptionResponse), (int)HttpStatusCode.InternalServerError)]
@@ -34,6 +34,13 @@ namespace API.Controllers.v2.Account
 
             var validationResult = IsValidRequest(request);
             if (IsInvalidResult(validationResult)) return ProcessValidationResult(validationResult);
+
+            if (await _identityService.IsUsernameExist(request.Username))
+            {
+                Logger.Here().Warning("{@ErrorCode}: Registration failed. username already taken. {@username}",
+                    ErrorCodes.Operationfailed, request.Username);
+                return CreateDuplicateUsernameResposne(request.Username);
+            }
 
             var result = await _identityService.Register(request);
 
@@ -49,6 +56,22 @@ namespace API.Controllers.v2.Account
 
             Logger.Here().Warning("{@ErrorCode}-{@Request} Request validation failed", ErrorCodes.UnprocessableEntity, request);
             return validationResult;
+        }
+
+        private IActionResult CreateDuplicateUsernameResposne(string username)
+        {
+            return UnprocessableEntity(new ApiValidationResponse
+            {
+                Code = ErrorCodes.Operationfailed,
+                Errors = new List<FieldLevelError> {
+                    new FieldLevelError
+                    {
+                        Code = ErrorCodes.UnprocessableEntity,
+                        Field = "username",
+                        Message = $"Username '{username}' is already taken."
+                    }
+                }
+            });
         }
     }
 }

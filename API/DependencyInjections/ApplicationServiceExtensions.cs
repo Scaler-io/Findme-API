@@ -28,6 +28,16 @@ namespace API.DependencyInjections
             services.Configure<ApiBehaviorOptions>(options => {
                 options.InvalidModelStateResponseFactory = HandleFrameorkValidationFailure();
             });
+
+            // Cors
+            services.AddCors(options =>
+            {
+                options.AddPolicy("FindmeCorsPolicy", policy =>
+                {
+                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                });
+            });
+
             // api versioning
             services.AddApiVersioning(options => {
                 options.DefaultApiVersion = new ApiVersion(1,0);
@@ -39,14 +49,6 @@ namespace API.DependencyInjections
             });
             // swagger
             services.ConfigureOptions<ConfigureSwaggerOptions>();
-            // Cors
-            services.AddCors(options =>
-            {
-                options.AddPolicy("DefaultCorsPolicy", policy =>
-                {
-                    policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-                });
-            });
             return services;
         }        
 
@@ -65,18 +67,19 @@ namespace API.DependencyInjections
 
             app.UseHttpsRedirection();
 
+
             // midlewares
             app.UseMiddleware<RequestLoggingMiddleware>();
             app.UseMiddleware<RequestExceptionMiddleware>();
 
-            app.UseCors("DefaultCorsPolicy");
+            app.UseCors("FindmeCorsPolicy");
 
             app.UseAuthentication();
 
             app.UseAuthorization();
 
             app.MapControllers();
-
+            
             app.Run();
 
             return app;

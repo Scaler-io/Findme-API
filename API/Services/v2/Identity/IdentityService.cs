@@ -22,14 +22,16 @@ namespace API.Services.v2.Account
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ITokenService _tokenService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public IdentityService(ILogger logger, IUnitOfWork unitOfWork, IMapper mapper, ITokenService tokenService)
+        public IdentityService(ILogger logger, IUnitOfWork unitOfWork, IMapper mapper, ITokenService tokenService, IHttpContextAccessor httpContextAccessor)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
             _userRepository = _unitOfWork.Repository<AppUser>();
             _mapper = mapper;
             _tokenService = tokenService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Result<AuthSuccessResponse>> Login(UserLoginRequest request)
@@ -42,7 +44,7 @@ namespace API.Services.v2.Account
             if (user == null)
             {
                 _logger.Error("{ErrorCode} - Invalid credential given.", ErrorCodes.Unauthorized);
-                return Result<AuthSuccessResponse>.Fail(ErrorCodes.Unauthorized);
+                return Result<AuthSuccessResponse>.Fail(ErrorCodes.Unauthorized, ErrorMessages.Unauthorized);
             }
 
             var hmac = new HMACSHA512(user.PasswordSalt);
@@ -52,7 +54,7 @@ namespace API.Services.v2.Account
                 if (computedHash[i] != user.PasswordHash[i])
                 {
                     _logger.Here().Error("{@ErrorCode} - Login attempt filed", ErrorCodes.Unauthorized);
-                    return Result<AuthSuccessResponse>.Fail(ErrorCodes.Unauthorized);
+                    return Result<AuthSuccessResponse>.Fail(ErrorCodes.Unauthorized, ErrorMessages.Unauthorized);
                 }
             }
 
@@ -60,7 +62,7 @@ namespace API.Services.v2.Account
 
             var result = HandleSuccessResponse(user);
 
-            _logger.Here().Information("Login attempt successfull {@username}", user.UserName);
+            _logger.Here().Information("Login attempt successfull {@user}", result);
             _logger.Here().MethodExited();
             return Result<AuthSuccessResponse>.Success(result);
         }
@@ -68,11 +70,6 @@ namespace API.Services.v2.Account
         public async Task<Result<AuthSuccessResponse>> Register(UserRegistrationRequest request)
         {
             _logger.Here().MethoEnterd();
-            if(await UserNameExists(request.Username))
-            {
-                _logger.Here().Information($"User with username {request.Username} already exists");
-                return Result<AuthSuccessResponse>.Fail(ErrorCodes.BadRequest, "Username is already in use");
-            }
 
             var user = PopulateUser(request);
             
@@ -85,12 +82,6 @@ namespace API.Services.v2.Account
             _logger.Here().Information("User registered successfully {@user}", result);
             _logger.Here().MethodExited();
             return Result<AuthSuccessResponse>.Success(result);
-        }
-
-        private async Task<bool> UserNameExists(string username)
-        {
-            var spec = new FindUserByUserNameSpec(username);
-            return await _userRepository.GetEntityWithSpec(spec) != null;
         }
 
         private AuthSuccessResponse HandleSuccessResponse(AppUser user)
@@ -114,6 +105,8 @@ namespace API.Services.v2.Account
                 PasswordSalt = hmac.Key,
                 Profile = new UserProfile
                 {
+                    FirstName = request.Profile.FirstName,
+                    LastName = request.Profile.LastName,
                     DateOfBirth = dob,
                     KnownAs = request.Profile.KnownAs,
                     Gender = gender,
@@ -126,7 +119,8 @@ namespace API.Services.v2.Account
                         District = request.Address.District,
                         State = request.Address.State,
                         PostCode = request.Address.PostCode
-                    }
+                    },
+                    CreatedBy = request.Username
                 },
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = null,
@@ -145,6 +139,43 @@ namespace API.Services.v2.Account
 
             _logger.Here().Information("User details updated");
             _logger.Here().MethodExited();
+        }
+
+        public UserDto GetCurrentUser()
+        {
+            var user = _httpContextAccessor.HttpContext.User;
+            var userId = user.GetAuthUsername();
+            var spec = new FindUserByUserNameSpec(userId);
+            var userResult = _userRepository.GetEntityWithSpec(spec).Result;
+            return _mapper.Map<UserDto>(userResult);
+        }
+
+        public async Task<bool> IsUsernameExist(string username)
+        {
+            _logger.Here().MethoEnterd();
+            var spec = new FindUserByUserNameSpec(username);
+            var user = await _userRepository.GetEntityWithSpec(spec);
+            if(user != null)
+            {
+                _logger.Here().Warning("{@ErrorCode} username already exists.");
+                return true;
+            }
+
+            _logger.Here().MethodExited();
+            return false;
+        }
+
+        public async Task<Result<AuthSuccessResponse>> AutoLogin()
+        {
+            _logger.Here().MethoEnterd();
+
+            var spec = new FindUserByUserNameSpec(GetCurrentUser().Username);
+            var user = await _userRepository.GetEntityWithSpec(spec);
+
+            var response = HandleSuccessResponse(user);
+
+            _logger.Here().MethodExited();
+            return Result<AuthSuccessResponse>.Success(response);
         }
     }
 }

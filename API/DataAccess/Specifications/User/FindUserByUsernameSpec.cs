@@ -7,7 +7,7 @@ namespace API.DataAccess.Specifications.User
         public FindUserByUserNameSpec(string username)
             : base(u => u.UserName == username.ToLower())
         {
-
+            AddIncludes("Profile.Address");
         }
     }
 }

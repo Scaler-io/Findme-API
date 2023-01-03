@@ -25,3 +25,18 @@ services:
     - ELASTICSEARCH_URL=http://localhost:9200
     networks:
     - elastic
+  
+ api:
+    container_name: Findme.API
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "LoggerConfigOption:OverrideSource=Microsoft"
+      - "LoggerConfigOption:OutputTemplate=[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {NewLine} {Properties} {NewLine} {NewLine} {Message} {Exception}"
+      - "ConnectionStrings:FindmeSqliteConnection=Data source=findme.db"
+      - "Elasticsearch:Uri=http://elasticsearch:9200"
+      - "TokenSecretKey=28f07f51-27ba-4fb5-8771-ae3a5630f0ae"
+    ports:
+      - "8000:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro

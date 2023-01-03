@@ -13,7 +13,9 @@ namespace API.AutoMappers.Resolvers
                 Id = source.Id,
                 JoinedOn = source.CreatedAt.HasValue ? source.CreatedAt.Value.ToString("dd-MM-yyyy hh:mm:ss") : string.Empty,
                 UpdatedOn = source.UpdatedAt.HasValue ? source.UpdatedAt.Value.ToString("dd-MM-yyyy hh:mm:ss") : string.Empty,
-                LastLogin = source.LastLogin.HasValue ? source.LastLogin.Value.ToString("dd-MM-yyyy hh:mm:ss") : string.Empty
+                LastLogin = source.LastLogin.HasValue ? source.LastLogin.Value.ToString("dd-MM-yyyy hh:mm:ss") : string.Empty,
+                CrteatedBy = source.Profile.CreatedBy,
+                UpdatedBy = source.Profile.UpdatedBy
             };
         }
     }

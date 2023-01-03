@@ -1,5 +1,5 @@
-﻿using API.Entities;
-using API.Models.Core;
+﻿using API.Models.Core;
+using API.Models.Requests.User;
 using API.Models.Responses;
 
 namespace API.Services.Interfaces.v2
@@ -8,5 +8,6 @@ namespace API.Services.Interfaces.v2
     {
         Task<Result<IReadOnlyList<UserResponse>>> GetUsers();
         Task<Result<UserResponse>> GetUserById(int id);
+        Task<Result<UserResponse>> UpdateUserInfo(UserUpdateRequest request, UserDto currentUser);
     }
 }

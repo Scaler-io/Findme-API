@@ -8,5 +8,8 @@ namespace API.Services.Interfaces.v2
     {
         Task<Result<AuthSuccessResponse>> Register(UserRegistrationRequest request);
         Task<Result<AuthSuccessResponse>> Login(UserLoginRequest request);
+        Task<bool> IsUsernameExist(string username);
+        Task<Result<AuthSuccessResponse>> AutoLogin();
+        UserDto GetCurrentUser();
     }
 }

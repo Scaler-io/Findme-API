@@ -13,20 +13,19 @@ using ILogger = Serilog.ILogger;
 namespace API.Controllers.v2.Account
 {
     [ApiVersion("2")]
-    public class LoginController: BaseApiController
+    public class LoginController : BaseApiController
     {
         private readonly IValidator<UserLoginRequest> _validator;
-        private readonly IIdentityService _identityService;
 
-        public LoginController(ILogger logger, IValidator<UserLoginRequest> validator, 
+        public LoginController(ILogger logger, IValidator<UserLoginRequest> validator,
             IIdentityService identityService)
-            : base(logger)
+            : base(logger, identityService)
         {
             _validator = validator;
             _identityService = identityService;
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         [ProducesResponseType(typeof(AuthSuccessResponse), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ApiValidationResponse), (int)HttpStatusCode.UnprocessableEntity)]
         [ProducesResponseType(typeof(ApiExceptionResponse), (int)HttpStatusCode.InternalServerError)]

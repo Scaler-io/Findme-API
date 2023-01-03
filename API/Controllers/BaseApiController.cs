@@ -1,22 +1,29 @@
 using API.Models.Constants;
 using API.Models.Core;
+using API.Services.Interfaces.v2;
 using FluentValidation.AspNetCore;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using ILogger = Serilog.ILogger;
 
 namespace API.Controllers
 {
-    [Route("api/v{version:apiVersion}/[controller]")]
+    [Route("api/v{version:apiVersion}")]
     [ApiController]
     public class BaseApiController: ControllerBase
     {
         public ILogger Logger { get; set; }
-        public BaseApiController(ILogger logger)
+
+        public IIdentityService _identityService { get; set; }
+        public BaseApiController(ILogger logger, IIdentityService identityService)
         {
+            _identityService = identityService;
             Logger = logger;
         }
+        protected UserDto CurrentUser => _identityService.GetCurrentUser();
+
+
+
 
         public IActionResult OkOrFail<T>(Result<T> result){
             if(result == null) return NotFound(new ApiResponse(ErrorCodes.NotFound));

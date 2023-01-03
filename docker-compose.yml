@@ -6,6 +6,12 @@ services:
   kibana:
     image: docker.elastic.co/kibana/kibana:7.9.2
 
+  api:
+    image: ${DOCKER_REGISTRY-}api
+    build:
+      context: .
+      dockerfile: API/Dockerfile
+
 networks:
   elastic:
     driver: bridge

@@ -6,5 +6,7 @@
         public string JoinedOn { get; set; }
         public string UpdatedOn { get; set; }
         public string LastLogin { get; set; }
+        public string CrteatedBy { get; set; }
+        public string UpdatedBy { get; set; }
     }
 }

@@ -4,8 +4,8 @@ namespace API.Models.Responses
 {
     public class AuthSuccessResponse
     {
-        public UserResponse User { get; set; }
-
+        public string Username { get; set; }
+        public string Address { get; set; }
         [LogMasked(ShowFirst = 5)]
         public string Token { get; set; }
     }
