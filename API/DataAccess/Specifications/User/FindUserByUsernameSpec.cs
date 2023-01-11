@@ -8,6 +8,7 @@ namespace API.DataAccess.Specifications.User
             : base(u => u.UserName == username.ToLower())
         {
             AddIncludes("Profile.Address");
+            AddIncludes("Profile.Photos");
         }
     }
 }

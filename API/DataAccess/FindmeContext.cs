@@ -1,10 +1,14 @@
 using API.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 
 namespace API.DataAccess
 {
-    public class FindmeContext: DbContext
+    public class FindmeContext: IdentityDbContext<AppUser, AppRole, int, 
+        IdentityUserClaim<int>, AppUserRole, IdentityUserLogin<int>, 
+        IdentityRoleClaim<int>, IdentityUserToken<int>>
     {
         public FindmeContext(DbContextOptions<FindmeContext> options)
             :base(options)
@@ -35,7 +39,5 @@ namespace API.DataAccess
 
             return base.SaveChangesAsync(cancellationToken);
         }
-
-        public DbSet<AppUser> Users { get; set; }
     }
 }

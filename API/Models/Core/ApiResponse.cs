@@ -7,7 +7,7 @@ namespace API.Models.Core
         public ApiResponse(string code, string message = "")
         {
             Code = code;
-            Message = message;
+            Message = string.IsNullOrEmpty(message) ? GetDefaultMessage(code) : message;
         }
 
         public string Code { get; set; }

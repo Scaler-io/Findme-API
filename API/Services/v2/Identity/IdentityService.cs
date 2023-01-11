@@ -9,6 +9,8 @@ using API.Models.Requests.Account;
 using API.Models.Responses;
 using API.Services.Interfaces.v2;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
 using ILogger = Serilog.ILogger;
@@ -23,8 +25,10 @@ namespace API.Services.v2.Account
         private readonly IMapper _mapper;
         private readonly ITokenService _tokenService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
 
-        public IdentityService(ILogger logger, IUnitOfWork unitOfWork, IMapper mapper, ITokenService tokenService, IHttpContextAccessor httpContextAccessor)
+        public IdentityService(ILogger logger, IUnitOfWork unitOfWork, IMapper mapper, ITokenService tokenService, IHttpContextAccessor httpContextAccessor, UserManager<AppUser> userManager, SignInManager<AppUser> signInManager)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
@@ -32,36 +36,28 @@ namespace API.Services.v2.Account
             _mapper = mapper;
             _tokenService = tokenService;
             _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         public async Task<Result<AuthSuccessResponse>> Login(UserLoginRequest request)
         {
             _logger.Here().MethoEnterd();
-
             var spec = new FindUserByUserNameSpec(request.Username);
             var user = await _userRepository.GetEntityWithSpec(spec);
-
             if (user == null)
             {
                 _logger.Error("{ErrorCode} - Invalid credential given.", ErrorCodes.Unauthorized);
                 return Result<AuthSuccessResponse>.Fail(ErrorCodes.Unauthorized, ErrorMessages.Unauthorized);
             }
-
-            var hmac = new HMACSHA512(user.PasswordSalt);
-            var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password));
-            for (int i = 0; i < computedHash.Length; i++)
+            var loginResponse = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+            if (!loginResponse.Succeeded)
             {
-                if (computedHash[i] != user.PasswordHash[i])
-                {
-                    _logger.Here().Error("{@ErrorCode} - Login attempt filed", ErrorCodes.Unauthorized);
-                    return Result<AuthSuccessResponse>.Fail(ErrorCodes.Unauthorized, ErrorMessages.Unauthorized);
-                }
+                _logger.Here().Information($"{ErrorCodes.Operationfailed}: Login attempt failed for username {request.Username}");
+                return Result<AuthSuccessResponse>.Fail(ErrorCodes.Operationfailed, "Login attempt failed");
             }
-
             await UpdateUserLoginTime(user);
-
-            var result = HandleSuccessResponse(user);
-
+            var result = await HandleSuccessResponse(user);
             _logger.Here().Information("Login attempt successfull {@user}", result);
             _logger.Here().MethodExited();
             return Result<AuthSuccessResponse>.Success(result);
@@ -72,23 +68,34 @@ namespace API.Services.v2.Account
             _logger.Here().MethoEnterd();
 
             var user = PopulateUser(request);
-            
-            // persistance
-            _userRepository.Add(user);
-            await _unitOfWork.Complete();
 
-            var result = HandleSuccessResponse(user);
+            // persistance
+            var identityResult = await _userManager.CreateAsync(user, request.Password);
+            if (!identityResult.Succeeded)
+            {
+                _logger.Here().Information("{@ErrorCodes}: User registration attempt failed {@Errors}.", ErrorCodes.Operationfailed, identityResult.Errors);
+                return Result<AuthSuccessResponse>.Fail(ErrorCodes.BadRequest, "User registration failed.");
+            }
+
+            var roleResult = await _userManager.AddToRoleAsync(user, UserRoles.Member);
+
+            if (!roleResult.Succeeded)
+            {
+                _logger.Here().Information("{@ErrorCodes}: Role assignement to user failed {@Errors}.", ErrorCodes.Operationfailed, identityResult.Errors);
+                return Result<AuthSuccessResponse>.Fail(ErrorCodes.BadRequest, "User registration failed.");
+            }
+
+            var result = await HandleSuccessResponse(user);
 
             _logger.Here().Information("User registered successfully {@user}", result);
             _logger.Here().MethodExited();
             return Result<AuthSuccessResponse>.Success(result);
         }
 
-        private AuthSuccessResponse HandleSuccessResponse(AppUser user)
+        private async Task<AuthSuccessResponse> HandleSuccessResponse(AppUser user)
         {
             var response = _mapper.Map<AuthSuccessResponse>(user);
-            response.Token = _tokenService.CreateToken(user);
-
+            response.Token = await _tokenService.CreateToken(user);
             return response;
         }
 
@@ -97,12 +104,9 @@ namespace API.Services.v2.Account
             DateTime.TryParse(request.Profile.DateOfBirth, out var dob);
             Enum.TryParse<Gender>(request.Profile.Gender, out var gender);
 
-            using var hmac = new HMACSHA512();
             return new AppUser
             {
-                UserName = request.Username.ToLower(),
-                PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
-                PasswordSalt = hmac.Key,
+                UserName = request.Username.ToLower(),               
                 Profile = new UserProfile
                 {
                     FirstName = request.Profile.FirstName,
@@ -133,10 +137,8 @@ namespace API.Services.v2.Account
             _logger.Here().MethoEnterd();
             user.LastLogin = DateTime.UtcNow;
             user.UpdatedAt = DateTime.UtcNow;
-
             _userRepository.Update(user);
             await _unitOfWork.Complete();
-
             _logger.Here().Information("User details updated");
             _logger.Here().MethodExited();
         }
@@ -144,8 +146,8 @@ namespace API.Services.v2.Account
         public UserDto GetCurrentUser()
         {
             var user = _httpContextAccessor.HttpContext.User;
-            var userId = user.GetAuthUsername();
-            var spec = new FindUserByUserNameSpec(userId);
+            var userName = user.GetAuthUsername();
+            var spec = new FindUserByUserNameSpec(userName);
             var userResult = _userRepository.GetEntityWithSpec(spec).Result;
             return _mapper.Map<UserDto>(userResult);
         }
@@ -153,14 +155,12 @@ namespace API.Services.v2.Account
         public async Task<bool> IsUsernameExist(string username)
         {
             _logger.Here().MethoEnterd();
-            var spec = new FindUserByUserNameSpec(username);
-            var user = await _userRepository.GetEntityWithSpec(spec);
-            if(user != null)
+            var user = await _userManager.Users.AnyAsync(u => u.UserName == username);
+            if(user)
             {
                 _logger.Here().Warning("{@ErrorCode} username already exists.");
                 return true;
             }
-
             _logger.Here().MethodExited();
             return false;
         }
@@ -172,7 +172,7 @@ namespace API.Services.v2.Account
             var spec = new FindUserByUserNameSpec(GetCurrentUser().Username);
             var user = await _userRepository.GetEntityWithSpec(spec);
 
-            var response = HandleSuccessResponse(user);
+            var response = await HandleSuccessResponse(user);
 
             _logger.Here().MethodExited();
             return Result<AuthSuccessResponse>.Success(response);

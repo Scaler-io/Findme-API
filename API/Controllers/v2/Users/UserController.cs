@@ -1,9 +1,10 @@
 ﻿using API.Extensions;
+using API.Filters;
+using API.Models.Constants;
 using API.Models.Requests.User;
 using API.Services.Interfaces.v2;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using ILogger = Serilog.ILogger;
 
 namespace API.Controllers.v2.Users
@@ -20,8 +21,8 @@ namespace API.Controllers.v2.Users
             _userService = userService;
         }
 
-        [AllowAnonymous]
         [HttpGet("user")]
+        [AccessPermission(ApiAccess.GenericRole)]
         public async Task<IActionResult> GetUsers()
         {
             Logger.Here().MethoEnterd();
@@ -31,6 +32,7 @@ namespace API.Controllers.v2.Users
         }
 
         [HttpGet("user/{id}")]
+        [AccessPermission(ApiAccess.GenericRole)]
         public async Task<IActionResult> GetUser([FromRoute]int id)
         {
             Logger.Here().MethoEnterd();
@@ -40,6 +42,7 @@ namespace API.Controllers.v2.Users
         }
 
         [HttpPut("user")]
+        [AccessPermission(ApiAccess.GenericRole)]
         public async Task<IActionResult> UpdateUserInfo([FromBody] UserUpdateRequest request)
         {
             Logger.Here().MethoEnterd();

@@ -4,6 +4,7 @@ using API.Services.Interfaces.v2;
 using FluentValidation.AspNetCore;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using ILogger = Serilog.ILogger;
 
 namespace API.Controllers
@@ -64,6 +65,7 @@ namespace API.Controllers
             };
             foreach (var error in errors)
             {
+                Logger.Information(JsonConvert.SerializeObject(error));
                 var fieldLevelError = new FieldLevelError
                 {
                     Code = "Invalid",

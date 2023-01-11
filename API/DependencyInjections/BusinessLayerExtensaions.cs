@@ -2,6 +2,7 @@
 using API.Services.v2;
 using API.Services.v2.Account;
 using API.Services.v2.Identity;
+using API.Services.v2.Photo;
 using API.Services.v2.Users;
 using FluentValidation;
 using System.Reflection;
@@ -17,6 +18,7 @@ namespace API.DependencyInjections
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IPostcodeSearchService, PostcodeSearchService>();
             services.AddScoped<IPostcodeValidationService, PostcodeValidationService>();
+            services.AddScoped<IPhotoUploadService, PhotoUploadService>();
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             services.AddAutoMapper(Assembly.GetExecutingAssembly());

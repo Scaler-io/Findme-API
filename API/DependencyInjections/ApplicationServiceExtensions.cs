@@ -1,9 +1,12 @@
+using API.Infrastructure.Cloudinary;
 using API.Infrastructure.Logger;
 using API.Middlewares;
 using API.Models.Core;
 using API.Swagger;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 namespace API.DependencyInjections
@@ -16,8 +19,35 @@ namespace API.DependencyInjections
         {
             // basics
             services.AddControllers();
-            services.AddEndpointsApiExplorer()
-                    .AddSwaggerGen();
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+                {
+                    In = ParameterLocation.Header,
+                    Description = "Please enter a valid token",
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = JwtBearerDefaults.AuthenticationScheme
+                });
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = JwtBearerDefaults.AuthenticationScheme
+                            }
+                        },
+                        new string[]{}
+                    }
+                });
+            });
+
+
             // serilog 
             var logger = LoggerConfig.Configure(configuration);
             services.AddSingleton(Log.Logger)   
@@ -49,6 +79,9 @@ namespace API.DependencyInjections
             });
             // swagger
             services.ConfigureOptions<ConfigureSwaggerOptions>();
+
+            // Configuration options
+            services.Configure<CloudinarySetting>(configuration.GetSection("ClodinarySetting"));
             return services;
         }        
 
@@ -79,8 +112,6 @@ namespace API.DependencyInjections
             app.UseAuthorization();
 
             app.MapControllers();
-            
-            app.Run();
 
             return app;
         }

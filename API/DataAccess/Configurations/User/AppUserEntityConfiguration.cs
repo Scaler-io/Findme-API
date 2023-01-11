@@ -16,6 +16,11 @@ namespace API.DataAccess.Configurations.User
             builder.HasOne(u => u.Profile)
                 .WithOne(p => p.User)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(ur => ur.UserRoles)
+                .WithOne(u => u.User)
+                .HasForeignKey(ur => ur.UserId)
+                .IsRequired();
         }
     }
 }
